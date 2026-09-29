@@ -1,0 +1,299 @@
+/**
+ * Cojeev UI Motion Design System Styles
+ * Integrated from 000h by Cojeev (https://000h.cojeev.com).
+ * Provides native-feel micro-interactions, fake caret blinking,
+ * tactile flow-press, and fluid spring transitions.
+ */
+
+:root {
+  /* ── Cojeev Timing Variables ── */
+  --t-micro: 120ms;
+  --t-element: 200ms;
+  --t-max: 300ms;
+  --t-draw: 600ms;
+  --t-flow-glide: 240ms;
+  --t-flow-glide-land: 360ms;
+  --t-flow-press: 75ms;
+
+  /* ── Cojeev Easings ── */
+  --e-flow-glide: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --e-flow-drop: cubic-bezier(0.3, 1.25, 0.4, 1);
+  --e-flow-jelly: cubic-bezier(0.3, 1.3, 0.45, 1);
+  --e-flow-rubber: cubic-bezier(0.3, 1.3, 0.4, 1);
+  --e-flow-settle: cubic-bezier(0.2, 0.65, 0.25, 1);
+  --e-flow-enter: cubic-bezier(0.16, 1, 0.3, 1);
+  --e-flow-exit: cubic-bezier(0.4, 0, 1, 1);
+}
+
+/* ─────────────────────────────────────────────────────────
+   1. INPUT OTP & FAKE CARET (Cojeev 000h Specification)
+   ───────────────────────────────────────────────────────── */
+
+.v-otp {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  user-select: none;
+}
+
+[data-slot="input-otp"] {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  position: relative;
+}
+
+[data-slot="input-otp-group"] {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  position: relative;
+}
+
+[data-slot="input-otp-slot"] {
+  position: relative;
+  width: 46px;
+  height: 54px;
+  display: grid;
+  place-items: center;
+  text-align: center;
+  font-family: 'Bricolage Grotesque Variable', ui-monospace, monospace;
+  font-size: 1.45rem;
+  font-weight: 700;
+  border-radius: 12px;
+  background: var(--surface, #ffffff);
+  border: 1.5px solid var(--border, #e2e8f0);
+  color: var(--ink, #0f172a);
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+  transition:
+    transform var(--t-micro) var(--e-flow-drop),
+    border-color var(--t-micro) ease,
+    box-shadow var(--t-micro) var(--e-flow-glide),
+    background-color var(--t-micro) ease;
+  will-change: transform, border-color, box-shadow;
+}
+
+[data-slot="input-otp-slot"]:hover {
+  border-color: color-mix(in srgb, var(--brand, #4f46e5) 40%, var(--border, #e2e8f0));
+}
+
+[data-slot="input-otp-slot"][data-active="true"],
+[data-slot="input-otp-slot"][data-state="active"] {
+  transform: translateY(-2px);
+  border-color: var(--brand, #4f46e5);
+  outline: 2px solid color-mix(in srgb, var(--brand, #4f46e5) 25%, transparent);
+  outline-offset: 2px;
+  box-shadow: 0 4px 12px rgba(79, 70, 229, 0.15);
+  background: #ffffff;
+}
+
+[data-slot="input-otp-slot"] [data-slot="input-otp-char"] {
+  animation: cojeev-digit-pop 160ms var(--e-flow-drop) backwards;
+}
+
+@keyframes cojeev-digit-pop {
+  0% {
+    opacity: 0;
+    transform: scale(0.6) translateY(4px);
+  }
+  70% {
+    transform: scale(1.08) translateY(-1px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+/* Fake Blinking Caret (as seen on 000h by Cojeev) */
+.cojeev-fake-caret {
+  position: absolute;
+  pointer-events: none;
+  width: 2px;
+  height: 24px;
+  border-radius: 999px;
+  background-color: var(--brand, #4f46e5);
+  animation: cojeev-caret-blink 1s ease-in-out infinite;
+}
+
+@keyframes cojeev-caret-blink {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
+}
+
+[data-slot="input-otp-separator"] {
+  display: grid;
+  place-items: center;
+  color: var(--ink-soft, #64748b);
+  font-weight: 600;
+  font-size: 1.1rem;
+  padding: 0 2px;
+  user-select: none;
+}
+
+/* ─────────────────────────────────────────────────────────
+   2. TACTILE FLOW PRESS (Native Touch & Click Physics)
+   ───────────────────────────────────────────────────────── */
+
+.flow-press,
+.v-flow-press,
+button.button,
+button.icon-button {
+  transition: transform var(--t-flow-press) var(--e-flow-glide),
+              box-shadow var(--t-flow-press) var(--e-flow-glide),
+              filter 140ms ease !important;
+  will-change: transform;
+}
+
+.flow-press:active:not(:disabled),
+.v-flow-press:active:not(:disabled),
+button.button:active:not(:disabled),
+button.icon-button:active:not(:disabled) {
+  transform: scale(0.965) translateY(1px) !important;
+}
+
+/* Rebound feedback pulse on landing */
+[data-flow-land] {
+  animation: cojeev-land-pulse var(--t-flow-glide-land) var(--e-flow-jelly);
+}
+
+@keyframes cojeev-land-pulse {
+  0% { transform: scale(0.96); }
+  45% { transform: scale(1.02); }
+  100% { transform: scale(1); }
+}
+
+/* ─────────────────────────────────────────────────────────
+   3. GLIDING PILL & NAVIGATION FLOW
+   ───────────────────────────────────────────────────────── */
+
+.v-glide-container {
+  position: relative;
+  isolation: isolate;
+}
+
+.v-glide-pill {
+  position: absolute;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+  border-radius: 12px;
+  background: var(--brand, #4f46e5);
+  transition:
+    transform var(--t-flow-glide) var(--e-flow-glide),
+    width var(--t-flow-glide) var(--e-flow-glide),
+    height var(--t-flow-glide) var(--e-flow-glide),
+    opacity var(--t-micro) ease;
+  will-change: transform, width, height;
+  z-index: 0;
+}
+
+/* ─────────────────────────────────────────────────────────
+   4. NATIVE DIALOG & SHEET REVEALS (Spring Elastic)
+   ───────────────────────────────────────────────────────── */
+
+dialog[open],
+.dialog-spring-enter {
+  animation: cojeev-dialog-spring 260ms var(--e-flow-drop) backwards !important;
+}
+
+dialog::backdrop {
+  animation: cojeev-backdrop-fade 180ms ease backwards !important;
+  backdrop-filter: blur(4px);
+  background: rgba(15, 23, 42, 0.45);
+}
+
+@keyframes cojeev-dialog-spring {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, 14px, 0) scale(0.95);
+  }
+  70% {
+    transform: translate3d(0, -2px, 0) scale(1.008);
+  }
+  100% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+}
+
+@keyframes cojeev-backdrop-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Bottom Sheet / Drawer on Mobile */
+.sheet-spring-enter {
+  animation: cojeev-sheet-enter 280ms var(--e-flow-enter) backwards;
+}
+
+@keyframes cojeev-sheet-enter {
+  from {
+    transform: translate3d(0, 100%, 0);
+  }
+  to {
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+/* ─────────────────────────────────────────────────────────
+   5. STAGGERED LIST & GRID ENTRANCES
+   ───────────────────────────────────────────────────────── */
+
+.cojeev-stagger-group > * {
+  animation: cojeev-item-in 240ms var(--e-flow-enter) backwards;
+}
+
+.cojeev-stagger-group > *:nth-child(1) { animation-delay: 20ms; }
+.cojeev-stagger-group > *:nth-child(2) { animation-delay: 55ms; }
+.cojeev-stagger-group > *:nth-child(3) { animation-delay: 90ms; }
+.cojeev-stagger-group > *:nth-child(4) { animation-delay: 125ms; }
+.cojeev-stagger-group > *:nth-child(5) { animation-delay: 160ms; }
+.cojeev-stagger-group > *:nth-child(6) { animation-delay: 195ms; }
+.cojeev-stagger-group > *:nth-child(7) { animation-delay: 230ms; }
+.cojeev-stagger-group > *:nth-child(8) { animation-delay: 265ms; }
+
+@keyframes cojeev-item-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Card hover lift */
+.cojeev-card-hover {
+  transition: transform var(--t-micro) var(--e-flow-enter),
+              box-shadow var(--t-micro) var(--e-flow-enter);
+  will-change: transform, box-shadow;
+}
+
+.cojeev-card-hover:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+}
+
+/* ─────────────────────────────────────────────────────────
+   6. ACCESSIBILITY: PREFERS REDUCED MOTION
+   ───────────────────────────────────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+  .cojeev-fake-caret {
+    animation: none !important;
+    opacity: 1 !important;
+  }
+}
