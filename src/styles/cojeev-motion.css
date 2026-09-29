@@ -142,7 +142,10 @@
 .flow-press,
 .v-flow-press,
 button.button,
-button.icon-button {
+button.icon-button,
+.catalog-floating-list,
+.pos-numpad-btn,
+.catalog-product-card__buy button {
   transition: transform var(--t-flow-press) var(--e-flow-glide),
               box-shadow var(--t-flow-press) var(--e-flow-glide),
               filter 140ms ease !important;
@@ -152,7 +155,10 @@ button.icon-button {
 .flow-press:active:not(:disabled),
 .v-flow-press:active:not(:disabled),
 button.button:active:not(:disabled),
-button.icon-button:active:not(:disabled) {
+button.icon-button:active:not(:disabled),
+.catalog-floating-list:active:not(:disabled),
+.pos-numpad-btn:active:not(:disabled),
+.catalog-product-card__buy button:active:not(:disabled) {
   transform: scale(0.965) translateY(1px) !important;
 }
 
@@ -278,6 +284,149 @@ dialog::backdrop {
 .cojeev-card-hover:hover {
   transform: translateY(-2px);
   box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+}
+
+/* ─────────────────────────────────────────────────────────
+   6. ADVANCED VISUAL & INTERACTIVE MICRO-ANIMATIONS
+   ───────────────────────────────────────────────────────── */
+
+/* Fluid page and view transitions */
+.route-view-container,
+.cojeev-page-enter {
+  animation: cojeev-view-in 220ms var(--e-flow-glide) backwards;
+}
+
+@keyframes cojeev-view-in {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 6px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+/* Organic Floating Stamp / Badge */
+.cojeev-float,
+.catalog-hero__stamp {
+  animation: cojeev-stamp-float 5s ease-in-out infinite alternate !important;
+}
+
+@keyframes cojeev-stamp-float {
+  0% {
+    transform: rotate(5deg) translate3d(0, 0, 0);
+  }
+  50% {
+    transform: rotate(3deg) translate3d(0, -8px, 0);
+  }
+  100% {
+    transform: rotate(6deg) translate3d(0, -3px, 0);
+  }
+}
+
+/* Heart Burst & Favorite Button */
+.cojeev-heart-burst {
+  animation: cojeev-heart-pop 320ms var(--e-flow-drop) backwards;
+}
+
+@keyframes cojeev-heart-pop {
+  0% {
+    transform: scale(0.8);
+  }
+  50% {
+    transform: scale(1.35);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* Cart Badge Bounce on Count Update */
+.cojeev-badge-bounce,
+.catalog-list-button strong,
+.catalog-floating-list strong {
+  transition: transform 180ms var(--e-flow-drop);
+}
+
+.cojeev-badge-bounce:active,
+.catalog-list-button:active strong,
+.catalog-floating-list:active strong {
+  transform: scale(1.22);
+}
+
+/* Shimmer Light-Pass for Badges & Highlights */
+.cojeev-shimmer {
+  position: relative;
+  overflow: hidden;
+}
+
+.cojeev-shimmer::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -60%;
+  width: 40%;
+  height: 200%;
+  background: linear-gradient(
+    60deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.45) 50%,
+    transparent 100%
+  );
+  transform: rotate(25deg);
+  animation: cojeev-shimmer-sweep 4s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@keyframes cojeev-shimmer-sweep {
+  0%, 70% {
+    left: -60%;
+    opacity: 0;
+  }
+  75% {
+    opacity: 1;
+  }
+  100% {
+    left: 150%;
+    opacity: 0;
+  }
+}
+
+/* Cart Line Insertion Pop */
+.cart-line-enter,
+.cart-line {
+  animation: cojeev-line-enter 220ms var(--e-flow-drop) backwards;
+}
+
+@keyframes cojeev-line-enter {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, -6px, 0) scale(0.98);
+  }
+  100% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+}
+
+/* Toast spring entrance */
+.cojeev-toast-spring {
+  animation: cojeev-toast-in 260ms var(--e-flow-drop) backwards;
+}
+
+@keyframes cojeev-toast-in {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, -12px, 0) scale(0.95);
+  }
+  70% {
+    transform: translate3d(0, 2px, 0) scale(1.01);
+  }
+  100% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
 }
 
 /* ─────────────────────────────────────────────────────────
