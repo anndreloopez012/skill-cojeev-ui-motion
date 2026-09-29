@@ -199,10 +199,10 @@ button.icon-button:active:not(:disabled),
 }
 
 /* ─────────────────────────────────────────────────────────
-   4. NATIVE DIALOG & SHEET REVEALS (Spring Elastic)
+   4. NATIVE DIALOG & SHEET REVEALS AND EXITS (Spring & Decel)
    ───────────────────────────────────────────────────────── */
 
-dialog[open],
+dialog[open]:not([data-closing="true"]):not(.is-closing),
 .dialog-spring-enter {
   animation: cojeev-dialog-spring 260ms var(--e-flow-drop) backwards !important;
 }
@@ -211,6 +211,19 @@ dialog::backdrop {
   animation: cojeev-backdrop-fade 180ms ease backwards !important;
   backdrop-filter: blur(4px);
   background: rgba(15, 23, 42, 0.45);
+}
+
+/* Exit Animations for Dialogs */
+dialog[data-closing="true"],
+dialog.is-closing,
+.dialog-spring-exit {
+  animation: cojeev-dialog-exit 180ms var(--e-flow-exit) forwards !important;
+  pointer-events: none;
+}
+
+dialog[data-closing="true"]::backdrop,
+dialog.is-closing::backdrop {
+  animation: cojeev-backdrop-exit 180ms var(--e-flow-exit) forwards !important;
 }
 
 @keyframes cojeev-dialog-spring {
@@ -227,14 +240,35 @@ dialog::backdrop {
   }
 }
 
+@keyframes cojeev-dialog-exit {
+  0% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translate3d(0, 10px, 0) scale(0.96);
+  }
+}
+
 @keyframes cojeev-backdrop-fade {
   from { opacity: 0; }
   to { opacity: 1; }
 }
 
+@keyframes cojeev-backdrop-exit {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
 /* Bottom Sheet / Drawer on Mobile */
 .sheet-spring-enter {
   animation: cojeev-sheet-enter 280ms var(--e-flow-enter) backwards;
+}
+
+.sheet-spring-exit,
+[data-sheet][data-closing="true"] {
+  animation: cojeev-sheet-exit 200ms var(--e-flow-exit) forwards !important;
 }
 
 @keyframes cojeev-sheet-enter {
@@ -244,6 +278,104 @@ dialog::backdrop {
   to {
     transform: translate3d(0, 0, 0);
   }
+}
+
+@keyframes cojeev-sheet-exit {
+  0% {
+    transform: translate3d(0, 0, 0);
+    opacity: 1;
+  }
+  100% {
+    transform: translate3d(0, 100%, 0);
+    opacity: 0.2;
+  }
+}
+
+/* Side Drawer (Catalog Cart) Exit */
+.catalog-cart-dialog[data-closing="true"],
+.catalog-cart-dialog.is-closing {
+  animation: catalog-drawer-out 220ms var(--e-flow-exit) forwards !important;
+  pointer-events: none;
+}
+
+@keyframes catalog-drawer-out {
+  0% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+  100% {
+    opacity: 0;
+    transform: translate3d(48px, 0, 0);
+  }
+}
+
+/* Cart Line Exit on Item Removal */
+.cart-line-exit,
+.catalog-cart-item[data-removing="true"] {
+  animation: cojeev-line-exit 200ms var(--e-flow-exit) forwards !important;
+  pointer-events: none;
+}
+
+@keyframes cojeev-line-exit {
+  0% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+    max-height: 120px;
+  }
+  100% {
+    opacity: 0;
+    transform: translate3d(-24px, 0, 0) scale(0.92);
+    max-height: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+    margin-bottom: 0;
+    border-color: transparent;
+  }
+}
+
+/* Fly to Cart Particle Animation */
+.cojeev-fly-particle {
+  position: fixed;
+  z-index: 9999;
+  pointer-events: none;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+  animation: cojeev-fly-to-cart 650ms cubic-bezier(0.18, 0.9, 0.2, 1) forwards;
+  will-change: transform, opacity;
+}
+
+@keyframes cojeev-fly-to-cart {
+  0% {
+    opacity: 1;
+    transform: translate3d(var(--fly-x, 0), var(--fly-y, 0), 0) scale(1);
+  }
+  40% {
+    opacity: 1;
+    transform: translate3d(calc(var(--fly-x, 0) * 0.5 + var(--target-x, 0) * 0.5), calc(var(--fly-y, 0) * 0.5 + var(--target-y, 0) * 0.5 - 60px), 0) scale(1.15);
+  }
+  100% {
+    opacity: 0.15;
+    transform: translate3d(var(--target-x, 0), var(--target-y, 0), 0) scale(0.35);
+  }
+}
+
+/* Button Added Success State */
+.button--added-success,
+.catalog-button--added {
+  background: #059669 !important;
+  color: #ffffff !important;
+  animation: cojeev-button-success 350ms var(--e-flow-drop) backwards;
+  border-color: #059669 !important;
+}
+
+@keyframes cojeev-button-success {
+  0% { transform: scale(0.92); }
+  60% { transform: scale(1.06); }
+  100% { transform: scale(1); }
 }
 
 /* ─────────────────────────────────────────────────────────

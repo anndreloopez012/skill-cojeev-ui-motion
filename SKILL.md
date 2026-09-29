@@ -436,6 +436,113 @@ Al montar o actualizar la clave del contador, re-ejecuta el salto físico:
 </strong>
 ```
 
+### 4.11 Animaciones de Salida y Cierre Físico de Modales y Drawers (`useAnimatedDialog`)
+
+En la web, el elemento nativo `<dialog>` al invocar `.close()` remueve inmediatamente el atributo `open` y destruye la visibilidad, imposibilitando transiciones de salida fluidas. Cojeev resuelve esto mediante un ciclo de desaceleración física:
+
+1. **Estado de Cierre Intermedio**: Antes de cerrar el DOM, se marca `dialog.dataset.closing = 'true'`.
+2. **Keyframe de Salida**: Aplica `@keyframes cojeev-dialog-exit` (o `catalog-drawer-out` para cajones laterales y `cojeev-sheet-exit` para bottom sheets) con `var(--e-flow-exit)` y `forwards`.
+3. **Escucha de `animationend` con Fallback**: Al dispararse `animationend` (o tras un fallback de 240ms por seguridad), se ejecuta el `.close()` nativo y se limpia el dataset.
+4. **Intercepción de Escape (`cancel`)**: El hook `useAnimatedDialog` cancela el evento nativo de escape (`event.preventDefault()`) para ejecutar la salida suave antes de desmontar.
+
+```tsx
+import { useAnimatedDialog } from 'skill-cojeev-ui-motion'
+
+export function MyModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
+  const dialogRef = useRef<HTMLDialogElement>(null)
+  const { close } = useAnimatedDialog(dialogRef, onClose)
+
+  return (
+    <dialog ref={dialogRef} className="dialog-spring-enter">
+      <h2>Modal con salida animada</h2>
+      <button onClick={close} className="flow-press">Cerrar</button>
+    </dialog>
+  )
+}
+```
+
+Reglas CSS de salida en `cojeev-motion.css`:
+```css
+dialog[data-closing="true"],
+dialog.is-closing,
+.dialog-spring-exit {
+  animation: cojeev-dialog-exit 200ms var(--e-flow-exit) forwards !important;
+  pointer-events: none;
+}
+
+dialog[data-closing="true"]::backdrop,
+dialog.is-closing::backdrop {
+  animation: cojeev-backdrop-exit 200ms ease forwards !important;
+}
+
+@keyframes cojeev-dialog-exit {
+  0% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translate3d(0, 10px, 0) scale(0.96);
+  }
+}
+```
+
+### 4.12 Partículas Voladoras al Carrito y Transformación de Éxito de Botón
+
+Cuando el usuario añade un artículo al carrito o lista de compras, Cojeev implementa una retroalimentación visual en tres tiempos:
+
+1. **Transformación Inmediata de Botón (`.button--added-success`)**:
+   - Cambia a color esmeralda `#059669` con icono de checkmark `✓`.
+   - Ejecuta micro-rebote `cojeev-button-success` (350ms con sobreimpulso) y se revierte tras 1200ms.
+2. **Partícula 3D Balística (`cojeev-fly-particle`)**:
+   - Se crea un clon o partícula circular temporal en las coordenadas exactas del botón de origen (`getBoundingClientRect()`).
+   - Calcula el vector hacia el botón o cajón del carrito objetivo.
+   - Vuela a través de una parábola bezier suave (`calc(x * 0.5 + targetX * 0.5), calc(y * 0.5 + targetY * 0.5 - 60px)`) reduciendo su escala y opacidad al aproximarse.
+3. **Rebote del Contador Destino**:
+   - El badge del carrito reacciona con `cojeev-badge-bounce` en el instante del impacto.
+
+```tsx
+function handleAddToCart(product: Product, buttonEl?: HTMLElement) {
+  // 1. Marcar estado local de agregado
+  setRecentlyAddedId(product.id)
+  setTimeout(() => setRecentlyAddedId(null), 1200)
+
+  // 2. Disparar partícula voladora
+  if (buttonEl) {
+    const origin = buttonEl.getBoundingClientRect()
+    const target = document.querySelector('.cart-floating-button')?.getBoundingClientRect()
+    if (target) {
+      spawnFlyParticle({
+        startX: origin.left + origin.width / 2,
+        startY: origin.top + origin.height / 2,
+        targetX: target.left + target.width / 2,
+        targetY: target.top + target.height / 2,
+      })
+    }
+  }
+}
+```
+
+### 4.13 Motor de Tematización Dinámica y Personalidad de Marca
+
+Permite que múltiples negocios o inquilinos (tenants) adapten la paleta y los textos principales manteniendo todas las animaciones y calidad física del sistema:
+
+- **Tokens Dinámicos Inyectados vía CSS Custom Properties**:
+  - `--catalog-forest`: Color de marca principal (botones primarios, hero, títulos).
+  - `--catalog-forest-dark`: Variante oscura para estados activos y sombras.
+  - `--catalog-ochre`: Acento cálido o vibrante (badges, favoritos, llamadas de atención).
+  - `--catalog-cream`: Fondo de aplicación suave.
+  - `--catalog-card`: Superficie de tarjetas y modales.
+  - `--catalog-ink`: Color de texto contrastante.
+- **Presets de 1 Clic**:
+  - **Kinvo Clásico**: Esmeralda botánica, acento ocre y fondo crema papel.
+  - **Índigo Eléctrico**: Cobalto moderno, acento violeta y fondo nieve.
+  - **Neón Cyber**: Grafito de alto contraste con acentos cyan.
+  - **Atardecer Cálido**: Terracota artesanal, acento ámbar y fondo arena.
+  - **Minimalista Nórdico**: Negro mate editorial y tonos pizarra limpios.
+- **Vista Previa en Vivo (Live Preview)**:
+  - Panel administrativo con sincronización instantánea y renderizado del catálogo en tiempo real.
+
 ---
 
 ## 5. Recetas de Aplicación Rápida
@@ -459,11 +566,22 @@ Añadir micro-elevación suave con zoom fluido en imagen:
 }
 ```
 
-### 5.3 En Diálogos y Modales
-Utilizar la animación con sobreimpulso elástico:
+### 5.3 En Diálogos y Modales (Entrada y Salida Suave)
+Combinar `cojeev-dialog-spring` de entrada con `useAnimatedDialog` para la salida:
 ```css
-dialog[open] {
+dialog[open]:not([data-closing="true"]) {
   animation: cojeev-dialog-spring 280ms var(--e-flow-drop) backwards;
+}
+dialog[data-closing="true"] {
+  animation: cojeev-dialog-exit 200ms var(--e-flow-exit) forwards !important;
+}
+```
+
+### 5.4 En Eliminación de Elementos del Carrito (Animación de Fila)
+```css
+.catalog-cart-item[data-removing="true"] {
+  animation: cojeev-line-exit 200ms var(--e-flow-exit) forwards !important;
+  pointer-events: none;
 }
 ```
 
@@ -473,3 +591,4 @@ dialog[open] {
 1. **Ramas**: Siempre trabajar nuevas características o adaptaciones en ramas con prefijo `feature/` o `fix/`.
 2. **Validación**: Verificar siempre `npm test` o `vitest`, `tsc --noEmit` y el build antes de fusionar.
 3. **Sincronización**: Fusionar cambios hacia `dev`, validar integración y finalmente sincronizar con `main`.
+
